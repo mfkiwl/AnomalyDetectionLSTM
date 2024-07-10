@@ -1,0 +1,9 @@
+*.ipynb
+*.png
+*.svg
+*.pt
+*.pdf
+*.txt
+*/__pycache__
+__pycache__
+.pylintrc

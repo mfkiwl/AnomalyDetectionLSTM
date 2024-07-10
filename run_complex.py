@@ -3,15 +3,11 @@
 """
 # %%´¨
 import time
-import random
 import torch
 from sklearn.model_selection import train_test_split
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import datetime
-from utils.helper_functions import epoch_time, print_model_params, to_test_sequences, to_train_sequences
+from utils.helper_functions import epoch_time, print_model_params, to_test_sequences, to_train_sequences, plot_prediction_losses
 from utils.prediction_visual import anomaly_calc
 from utils.handle_data import read_data_from_dat
 from utils.train import train_model
@@ -23,7 +19,6 @@ torch.manual_seed(SEED)
 torch.cuda.manual_seed(SEED)
 torch.cuda.manual_seed_all(SEED)
 np.random.seed(SEED)
-random.seed(SEED)
 
 DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 EPOCHS = 150
@@ -101,25 +96,6 @@ with open('threshold_values.txt', 'r') as best_vals:
         if line.startswith(model_path):
             correct_point =  True
     best_vals.close()
-font = {'size': 28}
-plt.rc('font', **font)
-plt.rcParams["figure.figsize"] = (27, 20)
-df_to_plot = pd.DataFrame({'losses': loss_vals})
-df_to_plot['index'] = df_to_plot.index
-df_to_plot['category'] = 'Clean'
 
-plt.clf()
-plt.title('Loss values of the different types of GNSS signal (CVAutoencoder)')
-sns.scatterplot(data=df_to_plot, hue='category', style='category', x='index', y='losses', s=50)
-plt.axhline(y = threshold_max, color = 'red', label = 'Threshold_max')
-plt.axhline(y = threshold_min, color = 'blue', label = 'Threshold_min')
-plt.xlabel('Test sample')
-plt.ylabel('Mean Absolute Error')
-plt.ylim(0,0.09)
-plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
-plt.show()
-
-print(len(loss_vals))
+plot_prediction_losses(list_of_endings, threshold_max, threshold_min, loss_vals)
 anomaly_calc(loss_vals, threshold_max, threshold_min, len(loss_vals), list_of_endings)
-
-# %%

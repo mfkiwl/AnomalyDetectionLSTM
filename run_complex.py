@@ -36,10 +36,6 @@ LEN_SEQ = 4
 WINDOW = FEATURES
 model_path = f'best_cv_model_{datetime.datetime}.pt'
 
-
-def custom_mse_criterion(pred, target):
-    return torch.mean(torch.abs(pred-target)**2)
-
 # %%
 # reate sequences for training data
 data = read_data_from_dat('your_path_dat/*.DAT', WINDOW)
@@ -68,7 +64,6 @@ criterion = custom_mse_criterion
     BATCHSIZE,
     EPOCHS,
     DEVICE,
-    WINDOW,
     model_path
 )
 end_total = time.time()

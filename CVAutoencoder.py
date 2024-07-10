@@ -1,41 +1,10 @@
 """_summary_
 @author: outisa
 """
-# %%´¨
-import time
-import random
 import torch
 from torch import nn
-from sklearn.model_selection import train_test_split
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import datetime
-from utils.weight_init import initialize_weights
-from utils.helper_functions import (epoch_time, print_model_params)
-from utils.prediction_visual import anomaly_calc
-from utils.handle_data import read_data_from_dat
-from utils.train import train_model
-from utils.predict import predict
-
-SEED = 2022
-torch.manual_seed(SEED)
-torch.cuda.manual_seed(SEED)
-torch.cuda.manual_seed_all(SEED)
-np.random.seed(SEED)
-random.seed(SEED)
-
-DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-EPOCHS = 150
-LR = 0.0001
-BATCHSIZE = 128
-NUM_LAYERS = 1
-FEATURES = 1024
-HIDDEN_DIM = 450
-LEN_SEQ = 4
-WINDOW = FEATURES
-model_path = f'best_cv_model_{datetime.datetime}.pt'
+torch.manual_seed(2022)
 
 # Autoencoder
 class ComplexAutoencoder(nn.Module):
@@ -137,105 +106,39 @@ class ComplexAutoencoder(nn.Module):
 def custom_mse_criterion(pred, target):
     return torch.mean(torch.abs(pred-target)**2)
 
-# %%
-# reate sequences for training data
-data = read_data_from_dat('your_path_dat/*.DAT', WINDOW)
-print(data.keys())
+def initialize_weights(dim1, dim2, criterion='glorot', seed=None):
+    """_summary_
+    Args:
+        dim1 (Integer): Dimension of the input layer
+        dim2 (Integer): _description_
+        criterion (str, optional): Based on given criterion, the standard 
+            deviation value is calculated and used when drawing the modulus from
+            the Rayleigh distribution. Defaults to 'glorot'.
+        seed (Integer, optional): Seed value. if not given torch.initial_seed is called.
+            Defaults to None.
 
-#%%
-train_data, list_of_endings1, train_class = [], [] ,[]
-for key in data.keys():
-    print(len(data[key]))
-    for i in range(0, len(data[key]), LEN_SEQ):
-        if len(data[key][i:i+LEN_SEQ]) == LEN_SEQ:
-            train_data.append(data[key][i:i+LEN_SEQ])
-            train_class.append(key)
-    list_of_endings1.append(key)
+    Raises:
+        ValueError: if wrong criterion name is given.
+    Code based on authors: Chiheb Trabelsi et all, Paper 'Deep Complex Network' can
+        be found on https://arxiv.org/abs/1705.09792
+    Returns:
+        complex128 tensor: Tensor containing complex valued weights
+    """
+    std = 0
+    if criterion == 'glorot':
+        std = 1.0/ np.sqrt(dim1 + dim2)
+    elif criterion == 'he':
+        std = 1.0/ np.sqrt(dim1)
+    else:
+        raise ValueError(f'Only "glorot" or "he" are accepted as criterion. {criterion} was given')
+    if seed is None:
+        seed = torch.initial_seed()
+    rs = np.random.RandomState(seed=seed)
 
-print(len(train_data))
+    weight_size = (dim2, dim1)
 
-MODEL = ComplexAutoencoder(FEATURES, HIDDEN_DIM,
-    NUM_LAYERS, LEN_SEQ).to(DEVICE)
-optimizer = torch.optim.Adam(MODEL.parameters(), lr=LR)
-
-start_total = time.time()
-train_set, val_set, train_y, val_y = train_test_split(train_data, train_class, test_size=0.2, random_state=42)
-criterion = custom_mse_criterion
-(
-    trained_model,
-    train_losses_final,
-    val_losses_final,
-) = train_model(
-    MODEL,
-    train_set,
-    val_set,
-    criterion,
-    optimizer,
-    BATCHSIZE,
-    EPOCHS,
-    DEVICE,
-    WINDOW,
-    model_path
-)
-end_total = time.time()
-epoch_time(start_total, end_total)
-print_model_params(trained_model)
-
-# %%
-MODEL = ComplexAutoencoder(FEATURES,HIDDEN_DIM, NUM_LAYERS, LEN_SEQ).to(DEVICE)
-#optimizer = torch.optim.Adam(MODEL.parameters(), lr=LR)
-criterion = custom_mse_criterion
-MODEL.load_state_dict(torch.load('model_path'))
-MODEL.eval()
-testData = read_data_from_dat('your_path/*.DAT', WINDOW)
-
-#%%
-test_data, list_of_endings= [], []
-end_sample = 0
-for key in testData.keys():
-    for i in range(0, len(testData[key]), LEN_SEQ):
-        if len(testData[key][i:i+LEN_SEQ]) == LEN_SEQ:
-            test_data.append(testData[key][i:i+LEN_SEQ])
-    end_sample = len(test_data)        
-    list_of_endings.append((key, end_sample))
-#%%
-start = time.time()
-loss_vals, predicted_vals = predict(MODEL, val_set, LEN_SEQ, FEATURES, DEVICE, criterion)
-end = time.time()
-epoch_time(start, end)
-#%%
-threshold_max, threshold_min = 0, 0
-
-with open('threshold_values.txt', 'r') as best_vals:
-    correct_point = False
-    for line in best_vals:
-        if correct_point:
-            parts = line.split(' ')
-            threshold_max = parts[3].split(':')[1]
-            threshold_min = parts[3].split(':')[2]
-            break
-        if line.startswith(model_path):
-            correct_point =  True
-    best_vals.close()
-font = {'size': 28}
-plt.rc('font', **font)
-plt.rcParams["figure.figsize"] = (27, 20)
-df_to_plot = pd.DataFrame({'losses': loss_vals})
-df_to_plot['index'] = df_to_plot.index
-df_to_plot['category'] = 'Clean'
-
-plt.clf()
-plt.title('Loss values of the different types of GNSS signal (CVAutoencoder)')
-sns.scatterplot(data=df_to_plot, hue='category', style='category', x='index', y='losses', s=50)
-plt.axhline(y = threshold_max, color = 'red', label = 'Threshold_max')
-plt.axhline(y = threshold_min, color = 'blue', label = 'Threshold_min')
-plt.xlabel('Test sample')
-plt.ylabel('Mean Absolute Error')
-plt.ylim(0,0.09)
-plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
-plt.show()
-
-print(len(loss_vals))
-anomaly_calc(loss_vals, threshold_max, threshold_min, len(loss_vals), list_of_endings)
-
-# %%
+    modulus = rs.rayleigh(scale=std, size=weight_size)
+    phase = rs.uniform(low=-np.pi, high=np.pi, size=weight_size)
+    weights_real = modulus * np.cos(phase)
+    weights_imag = modulus * np.sin(phase)
+    return torch.from_numpy( weights_real + 1j * weights_imag).to(torch.cdouble)

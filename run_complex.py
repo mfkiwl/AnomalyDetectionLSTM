@@ -95,7 +95,7 @@ with open('threshold_values.txt', 'r') as best_vals:
     for line in best_vals:
         if correct_point:
             parts = line.split(' ')
-            threshold_max = parts[3].split(':')[1]
+            threshold_max = parts[2].split(':')[1]
             threshold_min = parts[3].split(':')[2]
             break
         if line.startswith(model_path):

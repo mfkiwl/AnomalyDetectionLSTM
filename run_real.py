@@ -2,7 +2,6 @@
 import time
 import torch
 from  torch import nn
-import matplotlib.pyplot as plt
 import datetime
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -30,10 +29,14 @@ WINDOW = 128
 FEATURES = WINDOW
 HIDDEN_DIM = 100
 LEN_SEQ = 4
+STEP_SIZE = 1
+BANDWIDTH = int(25e6)
+sample_interval = 200
 real_valued = True
 model_path = f'best_rv_model_{datetime.datetime}.pt'
-data = read_data_from_dat('your_path', WINDOW, real_valued)
-#%%
+
+data = {}
+read_data_from_dat(data, 'your_path_dat/*.DAT', WINDOW, STEP_SIZE, BANDWIDTH, sample_interval, LEN_SEQ, real_valued)#%%
 train_data, list_of_endings_tr, train_class = [], [] ,[]
 to_train_sequences(data, train_data, train_class, list_of_endings_tr, LEN_SEQ)
 #%%
@@ -68,7 +71,7 @@ to_test_sequences(test_data, testData, LEN_SEQ, list_of_endings)
 #%%
 start = time.time()
 loss_vals, predicted_vals = predict(
-    model, test_data, LEN_SEQ, FEATURES, device, criterion)
+    model, test_data, LEN_SEQ, FEATURES, device, criterion, dtype=np.float64)
 end = time.time()
 epoch_time(start, end)
 

@@ -13,7 +13,7 @@ def get_data_files(files_to_read):
     print("Number of files:", len(data_files))
     return data_files
  
-def read_data_from_dat(data_set, files_to_read, window, step_size, BW, sample_interval=20, len_seq=4):
+def read_data_from_dat(data_set, files_to_read, window, step_size, BW, sample_interval=20, len_seq=4, real_valued=False):
     data_files = get_data_files(files_to_read)
     for numerator, file_name in enumerate(data_files):
         print(f'File {numerator+1}/{len(data_files)} - ',end=' ')
@@ -23,6 +23,7 @@ def read_data_from_dat(data_set, files_to_read, window, step_size, BW, sample_in
 
         file_size = os.path.getsize(file_name)
         total_ms = int(file_size / BW / 4) * 1000
+        plot_sample = True
 
         after_fft = []
         for j in range(0, int(total_ms), sample_interval):
@@ -34,7 +35,8 @@ def read_data_from_dat(data_set, files_to_read, window, step_size, BW, sample_in
             raw_signal = raw_signal.astype(np.float32).view(np.complex64)
 
             for i in range(0, len_seq):
-                after_fft.append(do_fft(raw_signal[i * step_size: (i +1) * step_size], window, BW))
+                after_fft.append(do_fft(raw_signal[i * step_size: (i +1) * step_size], window, plot_sample, BW, real_valued))
+                plot_sample = False
         print(f'Number of samples after fft: {len(after_fft)}')
         after_fft = np.array(after_fft)
         data_set[name] = torch.tensor(after_fft)

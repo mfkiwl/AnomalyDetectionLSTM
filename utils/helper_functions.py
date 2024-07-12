@@ -52,8 +52,8 @@ def to_test_sequences(test_data, df, len_seq, list_of_endings):
     print(df.keys())
     for key in df.keys():
         for i in range(0, len(df[key]), len_seq):
-            if len(test_data[key][i:i+len_seq]) == len_seq:
-                test_data.append(test_data[key][i:i+len_seq])
+            if len(df[key][i:i+len_seq]) == len_seq:
+                test_data.append(df[key][i:i+len_seq])
         end_sample = len(test_data)        
         list_of_endings.append((key, end_sample))
     print(len(test_data))

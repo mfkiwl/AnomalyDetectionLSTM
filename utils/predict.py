@@ -1,9 +1,9 @@
 import torch
 import numpy as np
 
-def predict(trained_model, test_x, seq_len, features, device, criterion):
+def predict(trained_model, test_x, seq_len, features, device, criterion, dtype):
     losses = []
-    predicted = np.ndarray((len(test_x), seq_len, features), dtype=np.complex128)
+    predicted = np.ndarray((len(test_x), seq_len, features), dtype=dtype)
     with torch.no_grad():
         trained_model.eval()
         len_test = len(test_x)

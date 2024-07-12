@@ -27,7 +27,7 @@ def read_data_from_dat(data_set, files_to_read, window, step_size, BW, sample_in
 
         after_fft = []
         for j in range(0, int(total_ms), sample_interval):
-            # here the bin file of integer is read, and then it will be converted to Complex
+            # binary file of integers IQIQIQIQ... convert it to complex numbers after which computer FFT
             offset_ = int(math.floor(j * BW * 4/1000))
             if offset_ + step_size * 2 * len_seq > file_size:
                 break

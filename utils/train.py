@@ -49,10 +49,10 @@ def train_model(model, train_x, val_x, criterion, optimizer, batch_size, n_epoch
                 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
                 if count >= 3:
                     break
-        best_vals.write('\n')
-        best_vals.close()
         end_time = time.time()
         epoch_time(start_time, end_time)
-        print(f'Epoch {epoch}: train loss: {mean_loss_train:.6f} val loss: {mean_loss:.6f}') 
-    plot_train_losses(val_loss, train_loss)        
+        print(f'Epoch {epoch}: train loss: {mean_loss_train:.6f} val loss: {mean_loss:.6f}')
+    best_vals.write('\n')
+    best_vals.close()
+    plot_train_losses(val_loss, train_loss)
     return model, train_losses, val_losses

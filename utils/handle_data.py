@@ -38,5 +38,4 @@ def read_data_from_dat(data_set, files_to_read, window, step_size, BW, sample_in
                 after_fft.append(do_fft(raw_signal[i * step_size: (i +1) * step_size], window, plot_sample, BW, real_valued))
                 plot_sample = False
         print(f'Number of samples after fft: {len(after_fft)}')
-        after_fft = np.array(after_fft)
-        data_set[name] = torch.tensor(after_fft)
+        data_set[name] = torch.tensor(np.array(after_fft))

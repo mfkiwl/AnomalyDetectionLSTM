@@ -77,7 +77,6 @@ testData = read_data_from_dat('your_path/*.DAT', WINDOW)
 
 #%%
 test_data, list_of_endings= [], []
-end_sample = 0
 to_test_sequences(test_data, testData, LEN_SEQ, list_of_endings)
 #%%
 start = time.time()

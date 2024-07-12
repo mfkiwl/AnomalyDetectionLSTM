@@ -9,7 +9,7 @@ torch.manual_seed(2022)
 # Autoencoder
 class ComplexAutoencoder(nn.Module):
     def __init__(self, features_n, hidden_dim, num_layers, seq_length) -> None:
-        super().__init__()
+        super(ComplexAutoencoder, self).__init__()
         # expected features, hidden sizes, number of stacked layers, batch_first=True means that
         # input shape should be N,L,H_in -> batch size, sequence length, input size
         self.features_n = features_n

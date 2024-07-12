@@ -86,7 +86,6 @@ with open('threshold_values.txt', 'r') as best_vals:
             break
         if line.startswith(model_path):
             correct_point =  True
-    best_vals.close()
 
 plot_prediction_losses(list_of_endings, threshold_max, threshold_min, loss_vals)
 anomaly_calc(loss_vals, threshold_max, threshold_min, len(loss_vals), list_of_endings)

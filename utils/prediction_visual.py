@@ -3,6 +3,8 @@
 """
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+import seaborn as sns
 
 def anomaly_calc(losses, threshold_max, threshold_min, samples, list_of_endings):
     anomalies = np.zeros((samples,))
@@ -111,3 +113,28 @@ def first_sample_from_class(test_data, predicted, list_of_endings):
     for obj in list_of_endings:
         plot_sample(test_data, predicted, start, obj[0])
         start = obj[1]
+
+def plot_prediction_losses(list_of_endings, threshold_max, threshold_min, loss_vals):
+    font = {'size': 28}
+    plt.rc('font', **font)
+    plt.rcParams["figure.figsize"] = (27, 20)
+    df_to_plot = pd.DataFrame({'losses': loss_vals})
+    df_to_plot['index'] = df_to_plot.index
+    df_to_plot['category'] = 'Clean'
+    START = 0
+
+    for sample in list_of_endings:
+        df_to_plot.loc[START:START+sample[1], 'category'] = sample[0]
+        print(np.min(loss_vals[START:START+sample[1]]))
+        START = sample[1]
+
+    plt.clf()
+    plt.title('Loss values for different (CVAuto')
+    sns.scatterplot(data=df_to_plot, hue='category', style='category', x='index', y='losses', s=50)
+    plt.axhline(y = threshold_max, color = 'red', label = 'Threshold_max')
+    plt.axhline(y = threshold_min, color = 'red', label = 'Threshold_min')
+    plt.xlabel('Test sample')
+    plt.ylabel('Mean Squared Error')
+    plt.ylim(0,0.09)
+    plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
+    plt.show()

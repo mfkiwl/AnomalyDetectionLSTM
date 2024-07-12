@@ -7,8 +7,8 @@ import torch
 from sklearn.model_selection import train_test_split
 import numpy as np
 import datetime
-from utils.helper_functions import epoch_time, print_model_params, to_test_sequences, to_train_sequences, plot_prediction_losses
-from utils.prediction_visual import anomaly_calc
+from utils.helper_functions import epoch_time, print_model_params, to_test_sequences, to_train_sequences
+from utils.prediction_visual import anomaly_calc, plot_prediction_losses
 from utils.handle_data import read_data_from_dat
 from utils.train import train_model
 from utils.predict import predict

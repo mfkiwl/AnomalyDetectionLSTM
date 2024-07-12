@@ -5,9 +5,9 @@ from  torch import nn
 import datetime
 import numpy as np
 from sklearn.model_selection import train_test_split
-from utils.helper_functions import epoch_time, to_train_sequences, to_test_sequences, plot_prediction_losses
+from utils.helper_functions import epoch_time, to_train_sequences, to_test_sequences
 from utils.handle_data import read_data_from_dat
-from utils.prediction_visual import anomaly_calc
+from utils.prediction_visual import anomaly_calc, plot_prediction_losses
 from utils.train import train_model
 from utils.predict import predict
 from real_lstm_autoencoder import RealAutoencoder

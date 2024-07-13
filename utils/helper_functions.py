@@ -123,13 +123,15 @@ shot.
     plt.show()
 
 def do_fft(col, window_len, title, plot, BW, real_valued=False):
-    """ Calculates FFT for the 1 ms snapRearranges the resulted in 
+    """ Calculates FFT for the snapshot and rearranges the resulted in 
         tensor with FFTshift.
     Args:
-        df (pd.DataFrame): Dataframe from which the snapshot is taken
+        col: data snapshot
         window_len (Integer): window_len length for FFT
-        key (String): Column name, 
-        plot_complex (bool, optional): Tells whether to plot the given results. Defaults to False.
+        title (String): plot title
+        plot (Boolean): Should the values be plotted
+        BW (Integer): bandwidth
+        real_valued (bool, optional): Tells which operation should be done - complex or real-valued.
     """
     if real_valued:
         win = hann(window_len, True)
@@ -137,7 +139,8 @@ def do_fft(col, window_len, title, plot, BW, real_valued=False):
         input_val = torch.fft.fftshift(10*torch.log10(torch.tensor(pxx)))
         if plot:
             plt.plot(input_val)
-            plt.ylim(-80, 20)
+            plt.title(title)
+            plt.ylim(-50, 20)
             plt.show()
         scaler = MinMaxScaler(feature_range=(-1,1))
         return scaler.fit_transform(input_val.reshape(-1,1)).flatten()
@@ -147,9 +150,10 @@ def do_fft(col, window_len, title, plot, BW, real_valued=False):
             plot_complex_vectors(input_val, title, window_len)
         return scaling_same_scaler(input_val, window_len).numpy()
 
-def print_model_params(model):
-    for name, param in model.named_parameters():
-        if param.requires_grad:
-            print(f'requires grad: {name}, {param.size()}')
-        else:
-            print(f'requires no grad: {name}, {param.size()}')
+def write_model_params(model, model_path):
+    with open(f'{model_path}_model_parmas.txt', 'w') as model_params:
+        for name, param in model.named_parameters():
+            if param.requires_grad:
+                model_params.write(f'requires grad: {name}, {param.size()}')
+            else:
+                model_params.write(f'requires no grad: {name}, {param.size()}')

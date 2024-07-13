@@ -1,15 +1,16 @@
 import time
 import torch
 import numpy as np
+import copy
 from utils.helper_functions import epoch_time
 from utils.prediction_visual import plot_train_losses
 
 def train_model(model, train_x, val_x, criterion, optimizer, batch_size, n_epochs, device, model_path):
     train_loss, val_loss = [], []
     best_vloss = 1000
-    with open('threshold_values.txt', 'a') as best_vals:
-        best_vals.write(f'{model_path}\n\n')
-        count = 0
+    count = 0
+    with open(f'{model_path}_threshold_values.txt', 'w') as best_vals:
+        best_vals.write(f'{model_path}\n')
         for epoch in range(n_epochs):
             if epoch == 30:
                 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
@@ -41,17 +42,19 @@ def train_model(model, train_x, val_x, criterion, optimizer, batch_size, n_epoch
                 val_loss.append(mean_loss)
                 if mean_loss < best_vloss:
                     best_vloss = mean_loss
-                    best_vals.seek(best_vals.tell() - 1)
-                    best_vals.write(f'Loss_values mean:{mean_loss} max:{np.max(val_losses)} min:{np.min(val_losses)}\n')
+                    to_add = f'Loss_values mean:{mean_loss:.6f} max:{np.max(val_losses):.6f} min:{np.min(val_losses):6f}\n'
+                    best_vals.write(to_add)
                     torch.save(model.state_dict(), model_path)
+                    best_model = copy.deepcopy(model)
                 elif mean_loss > best_vloss:
                     count += 1
-                    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
                     if count >= 3:
                         break
+
             end_time = time.time()
             epoch_time(start_time, end_time)
             print(f'Epoch {epoch}: train loss: {mean_loss_train:.6f} val loss: {mean_loss:.6f}')
-        best_vals.write('\n')
+        to_add = to_add.replace('\n', '')
+        best_vals.write(to_add)
     plot_train_losses(val_loss, train_loss)
-    return model, train_losses, val_losses
+    return best_model

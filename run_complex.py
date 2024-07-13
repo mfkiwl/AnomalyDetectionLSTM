@@ -7,7 +7,7 @@ import torch
 from sklearn.model_selection import train_test_split
 import numpy as np
 import datetime
-from utils.helper_functions import epoch_time, print_model_params, to_test_sequences, to_train_sequences
+from utils.helper_functions import epoch_time, write_model_params, to_test_sequences, to_train_sequences
 from utils.prediction_visual import anomaly_calc, plot_prediction_losses
 from utils.handle_data import read_data_from_dat
 from utils.train import train_model
@@ -32,7 +32,7 @@ WINDOW = FEATURES
 STEP_SIZE = 1
 BANDWIDTH = int(25e6)
 sample_interval = 200
-model_path = f'best_cv_model_{datetime.datetime}.pt'
+model_path = f'best_cv_model_{datetime.datetime.now()}.pt'
 
 # %%
 # reate sequences for training data
@@ -65,37 +65,29 @@ criterion = custom_mse_criterion
 )
 end_total = time.time()
 epoch_time(start_total, end_total)
-print_model_params(trained_model)
-
+write_model_params(trained_model, model_path)
 # %%
-MODEL = ComplexAutoencoder(FEATURES,HIDDEN_DIM, NUM_LAYERS, LEN_SEQ).to(DEVICE)
-#optimizer = torch.optim.Adam(MODEL.parameters(), lr=LR)
-criterion = custom_mse_criterion
-MODEL.load_state_dict(torch.load('model_path'))
-MODEL.eval()
+# in case of need, get the right model. note: use correct hyperparameters
+# trained_model = ComplexAutoencoder(FEATURES, HIDDEN_DIM, NUM_LAYERS, LEN_SEQ).to(DEVICE)
+# trained_model.load_state_dict(torch.load(model_path)) # change correct model path
+# trained_model.eval()
 testData = read_data_from_dat('your_path/*.DAT', WINDOW)
 
-#%%
 test_data, list_of_endings= [], []
 to_test_sequences(test_data, testData, LEN_SEQ, list_of_endings)
-#%%
+
 start = time.time()
 loss_vals, predicted_vals = predict(MODEL, val_set, LEN_SEQ, FEATURES, DEVICE, criterion, dtype=np.complex128)
 end = time.time()
 epoch_time(start, end)
-#%%
-threshold_max, threshold_min = 0, 0
 
-with open('threshold_values.txt', 'r') as best_vals:
-    correct_point = False
-    for line in best_vals:
-        if correct_point:
-            parts = line.split(' ')
-            threshold_max = parts[2].split(':')[1]
-            threshold_min = parts[3].split(':')[2]
-            break
-        if line.startswith(model_path):
-            correct_point =  True
+threshold_max, threshold_min = 0, 0
+with open(f'{model_path}_threshold_values.txt', 'r') as best_vals:
+    lines = best_vals.readlines()
+    parts = lines[-1].split(' ')
+    print(parts)
+    threshold_max = float(parts[2].split(':')[1])
+    threshold_min = float(parts[3].split(':')[1])
 
 plot_prediction_losses(list_of_endings, threshold_max, threshold_min, loss_vals)
 anomaly_calc(loss_vals, threshold_max, threshold_min, len(loss_vals), list_of_endings)

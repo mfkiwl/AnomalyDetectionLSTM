@@ -5,7 +5,7 @@ from  torch import nn
 import datetime
 import numpy as np
 from sklearn.model_selection import train_test_split
-from utils.helper_functions import epoch_time, to_train_sequences, to_test_sequences
+from utils.helper_functions import epoch_time, to_train_sequences, to_test_sequences, write_model_params
 from utils.handle_data import read_data_from_dat
 from utils.prediction_visual import anomaly_calc, plot_prediction_losses
 from utils.train import train_model
@@ -33,7 +33,7 @@ STEP_SIZE = 1
 BANDWIDTH = int(25e6)
 sample_interval = 200
 real_valued = True
-model_path = f'best_rv_model_{datetime.datetime}.pt'
+model_path = f'best_rv_model_{datetime.datetime.now()}.pt'
 
 data = {}
 read_data_from_dat(data, 'your_path_dat/*.DAT', WINDOW, STEP_SIZE, BANDWIDTH, sample_interval, LEN_SEQ, real_valued)#%%
@@ -47,9 +47,7 @@ start_total = time.time()
 train_set, val_set, train_y, val_y = train_test_split(train_data, train_class, test_size=0.2, random_state=42)
 
 (
-    trained_model,
-    train_losses_final,
-    val_losses_final,
+    trained_model
 ) = train_model(
     model,
     train_set,
@@ -63,29 +61,24 @@ train_set, val_set, train_y, val_y = train_test_split(train_data, train_class, t
 )
 end_total = time.time()
 epoch_time(start_total, end_total)
-
+write_model_params(trained_model, model_path)
 # %%
 testData = read_data_from_dat('your_data', WINDOW, False)
 test_data, list_of_endings = [], []
 to_test_sequences(test_data, testData, LEN_SEQ, list_of_endings)
-#%%
+
 start = time.time()
 loss_vals, predicted_vals = predict(
     model, test_data, LEN_SEQ, FEATURES, device, criterion, dtype=np.float64)
 end = time.time()
 epoch_time(start, end)
 
-#%%
 threshold_max, threshold_min = 0, 0
-with open('threshold_values.txt', 'r') as best_vals:
-    correct_point = False
-    for line in best_vals:
-        if correct_point:
-            parts = line.split(' ')
-            threshold_max = parts[2].split(':')[1]
-            break
-        if line.startswith(model_path):
-            correct_point =  True
+with open(f'{model_path}_threshold_values.txt', 'r') as best_vals:
+    lines = best_vals.readlines()
+    parts = lines[-1].split(' ')
+    print(parts)
+    threshold_max = float(parts[2].split(':')[1])
 
 plot_prediction_losses(list_of_endings, threshold_max, threshold_min, loss_vals)
 anomaly_calc(loss_vals, threshold_max, threshold_min, len(loss_vals), list_of_endings)

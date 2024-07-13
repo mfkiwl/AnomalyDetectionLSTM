@@ -33,7 +33,7 @@ class ComplexAutoencoder(nn.Module):
         self.init_hidden(self.lstm_out1, self.hidden_dim, self.hidden_dim*2)
         self.init_hidden(self.lstm_out2, self.hidden_dim*2, self.features_n)
         self.init_linear_weights(self.linear, self.features_n, self.features_n)
-        self.init_linear_weights(self.linear1, self.hidden_dim*2, self.hidden_dim*2)
+
     # Initialize hidden states
     def init_hidden(self, mod, dim1, dim2):
         for value in mod.state_dict():

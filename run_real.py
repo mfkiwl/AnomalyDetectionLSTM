@@ -29,14 +29,14 @@ WINDOW = 128
 FEATURES = WINDOW
 HIDDEN_DIM = 100
 LEN_SEQ = 4
-STEP_SIZE = 1
 BANDWIDTH = int(25e6)
-sample_interval = 200
+sample_interval = 1e-4
+sample_length = 200
 real_valued = True
 model_path = f'best_rv_model_{datetime.datetime.now()}.pt'
 
 data = {}
-read_data_from_dat(data, 'your_path_dat/*.DAT', WINDOW, STEP_SIZE, BANDWIDTH, sample_interval, LEN_SEQ, real_valued)#%%
+read_data_from_dat(data, 'your_path_dat/*.DAT', WINDOW, BANDWIDTH, sample_length, sample_interval, real_valued=True)#%%
 train_data, list_of_endings_tr, train_class = [], [] ,[]
 to_train_sequences(data, train_data, train_class, list_of_endings_tr, LEN_SEQ)
 #%%
@@ -63,7 +63,8 @@ end_total = time.time()
 epoch_time(start_total, end_total)
 write_model_params(trained_model, model_path)
 # %%
-testData = read_data_from_dat('your_data', WINDOW, False)
+testData = {}
+read_data_from_dat(testData, 'your_path_dat/*.DAT', WINDOW, BANDWIDTH, sample_length, sample_interval, real_valued=True)
 test_data, list_of_endings = [], []
 to_test_sequences(test_data, testData, LEN_SEQ, list_of_endings)
 

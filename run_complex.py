@@ -29,15 +29,15 @@ FEATURES = 1024
 HIDDEN_DIM = 450
 LEN_SEQ = 4
 WINDOW = FEATURES
-STEP_SIZE = 1
 BANDWIDTH = int(25e6)
-sample_interval = 200
+sample_length = 200
+sample_interval = int(2e-4)
 model_path = f'best_cv_model_{datetime.datetime.now()}.pt'
 
 # %%
 # reate sequences for training data
 data = {}
-read_data_from_dat(data, 'your_path_dat/*.DAT', WINDOW, STEP_SIZE, BANDWIDTH, sample_interval, LEN_SEQ)
+read_data_from_dat(data, 'your_path_dat/*.DAT', WINDOW, BANDWIDTH, sample_length, sample_interval)
 
 #%%
 train_data, list_of_endings_tr, train_class = [], [] ,[]
@@ -71,7 +71,8 @@ write_model_params(trained_model, model_path)
 # trained_model = ComplexAutoencoder(FEATURES, HIDDEN_DIM, NUM_LAYERS, LEN_SEQ).to(DEVICE)
 # trained_model.load_state_dict(torch.load(model_path)) # change correct model path
 # trained_model.eval()
-testData = read_data_from_dat('your_path/*.DAT', WINDOW)
+testData = {}
+read_data_from_dat(testData, 'your_path_dat/*.DAT', WINDOW, BANDWIDTH, sample_length, sample_interval)
 
 test_data, list_of_endings= [], []
 to_test_sequences(test_data, testData, LEN_SEQ, list_of_endings)

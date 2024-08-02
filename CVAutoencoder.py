@@ -8,31 +8,22 @@ torch.manual_seed(2022)
 
 # Autoencoder
 class ComplexAutoencoder(nn.Module):
-    def __init__(self, features_n, hidden_dim, num_layers, seq_length) -> None:
+    def __init__(self, features_n, hidden_dim, num_layers) -> None:
         super(ComplexAutoencoder, self).__init__()
         # expected features, hidden sizes, number of stacked layers, batch_first=True means that
         # input shape should be N,L,H_in -> batch size, sequence length, input size
-        self.features_n = features_n
-        self.seq_len = seq_length
-        self.hidden_dim = hidden_dim
-        self.num_layers = num_layers
 
-        self.lstm_in1 = nn.LSTM(self.features_n, self.hidden_dim*2,
-            num_layers, batch_first=True, bias=True).to(torch.cdouble)
-        self.lstm_in2 = nn.LSTM(self.hidden_dim*2, self.hidden_dim,
-            num_layers, batch_first=True, bias=True).to(torch.cdouble)
-        self.lstm_out1 = nn.LSTM(self.hidden_dim, self.hidden_dim*2,
-            num_layers, batch_first=True, bias=True).to(torch.cdouble)
-        self.lstm_out2 = nn.LSTM(self.hidden_dim*2, self.features_n,
-            num_layers, batch_first=True, bias=True).to(torch.cdouble)
-        self.linear = nn.Linear(
-            self.features_n, self.features_n, bias=True).to(torch.cdouble)
+        self.lstm_in1 = nn.LSTM(features_n, hidden_dim*2, num_layers, batch_first=True, bias=True).to(torch.cdouble)
+        self.lstm_in2 = nn.LSTM(hidden_dim*2, hidden_dim, num_layers, batch_first=True, bias=True).to(torch.cdouble)
+        self.lstm_out1 = nn.LSTM(hidden_dim, hidden_dim*2, num_layers, batch_first=True, bias=True).to(torch.cdouble)
+        self.lstm_out2 = nn.LSTM(hidden_dim*2, features_n, num_layers, batch_first=True, bias=True).to(torch.cdouble)
+        self.linear = nn.Linear(features_n, features_n, bias=True).to(torch.cdouble)
 
-        self.init_hidden(self.lstm_in1, self.features_n, self.hidden_dim*2)
-        self.init_hidden(self.lstm_in2, self.hidden_dim*2, self.hidden_dim)
-        self.init_hidden(self.lstm_out1, self.hidden_dim, self.hidden_dim*2)
-        self.init_hidden(self.lstm_out2, self.hidden_dim*2, self.features_n)
-        self.init_linear_weights(self.linear, self.features_n, self.features_n)
+        self.init_hidden(self.lstm_in1, features_n, hidden_dim*2)
+        self.init_hidden(self.lstm_in2, hidden_dim*2, hidden_dim)
+        self.init_hidden(self.lstm_out1, hidden_dim, hidden_dim*2)
+        self.init_hidden(self.lstm_out2, hidden_dim*2, features_n)
+        self.init_linear_weights(self.linear, features_n, features_n)
 
     # Initialize hidden states
     def init_hidden(self, mod, dim1, dim2):
@@ -49,8 +40,7 @@ class ComplexAutoencoder(nn.Module):
                 )
                 # 4*hidden, input
                 weight_ih_data = weight_ih_data.view(dim2*4, dim1)
-                mod.state_dict()[value].data.copy_(
-                    weight_ih_data).requires_grad_()
+                mod.state_dict()[value].data.copy_(weight_ih_data).requires_grad_()
             # Input-hidden weights at the second and upcoming layers
             elif 'weight_ih' in value:
                 weight_ih_data_ii = initialize_weights(dim2, dim2)  # I_Wii
@@ -63,8 +53,7 @@ class ComplexAutoencoder(nn.Module):
                 )
                 # 4*hidden, hidden
                 weight_ih_data = weight_ih_data.view(dim2*4, dim2)
-                mod.state_dict()[value].data.copy_(
-                    weight_ih_data).requires_grad_()
+                mod.state_dict()[value].data.copy_(weight_ih_data).requires_grad_()
             # Hidden to hidden layers
             elif 'weight_hh' in value:
                 weight_hh_data_hi = initialize_weights(dim2, dim2)  # H_Whi
@@ -77,8 +66,7 @@ class ComplexAutoencoder(nn.Module):
                 )
                 # 4*hidden, hidden
                 weight_hh_data = weight_hh_data.view(dim2*4, dim2)
-                mod.state_dict()[value].data.copy_(
-                    weight_hh_data).requires_grad_()
+                mod.state_dict()[value].data.copy_(weight_hh_data).requires_grad_()
             # Bias for both hidden-hidden and input-hidden layers
             elif 'bias' in value:
                 bias_i = initialize_weights(dim2, 1) * 0

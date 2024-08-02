@@ -43,16 +43,13 @@ read_data_from_dat(data, 'your_path_dat/*.DAT', WINDOW, BANDWIDTH, sample_length
 train_data, list_of_endings_tr, train_class = [], [] ,[]
 to_train_sequences(data, train_data, train_class, list_of_endings_tr, LEN_SEQ)
 
-MODEL = ComplexAutoencoder(FEATURES, HIDDEN_DIM,
-    NUM_LAYERS, LEN_SEQ).to(DEVICE)
+MODEL = ComplexAutoencoder(FEATURES, HIDDEN_DIM, NUM_LAYERS).to(DEVICE)
 optimizer = torch.optim.Adam(MODEL.parameters(), lr=LR)
 
 start_total = time.time()
 train_set, val_set, train_y, val_y = train_test_split(train_data, train_class, test_size=0.2, random_state=42)
 criterion = custom_mse_criterion
-(
-    trained_model
-) = train_model(
+trained_model = train_model(
     MODEL,
     train_set,
     val_set,
@@ -68,7 +65,7 @@ epoch_time(start_total, end_total)
 write_model_params(trained_model, model_path)
 # %%
 # in case of need, get the right model. note: use correct hyperparameters
-# trained_model = ComplexAutoencoder(FEATURES, HIDDEN_DIM, NUM_LAYERS, LEN_SEQ).to(DEVICE)
+# trained_model = ComplexAutoencoder(FEATURES, HIDDEN_DIM, NUM_LAYERS).to(DEVICE)
 # trained_model.load_state_dict(torch.load(model_path)) # change correct model path
 # trained_model.eval()
 testData = {}

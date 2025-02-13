@@ -15,7 +15,7 @@ Global Navigation Satellite Systems (GNSS) serve many critical systems. Unfortun
 - For training the model, only clean data is used. That is, the detection is based on the reconstruction error in the prediction. Test data should contain both clean and samples with interference.
 
 ## Requirements
-General machine learning and signal processing librariers:
+General machine learning and signal processing libraries:
 - PyTorch
 - numpy
 - pandas

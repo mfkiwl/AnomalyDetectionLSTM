@@ -7,8 +7,6 @@ O. Savolainen, A. Elango, A. Morrison, N. Sokolova and L. Ruotsalainen, "GNSS An
 ## Abstract
 
 ## Data
-
-## Data
 - Data is expected to be in a binary file (`.dat` or `.DAT`) including in-phase and quadrature (IQ) components. These two components should alternate as follows IQIQIQ...
     - In our experiments, the real-world data was collected as a part of the ARFIDAAS -project.
     - Generated data was collected with Orolia's signal simulator.
